@@ -1,4 +1,5 @@
 Kernel Namespaces, User Namespaces
+
 Inside each container, you see a filesystem, network interfaces, disks, and other
 resources that all appear to be unique to the container despite sharing the kernel with
 all the other processes on the system. The network interface on the actual machine,

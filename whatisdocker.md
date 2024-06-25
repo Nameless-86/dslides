@@ -1,20 +1,85 @@
-Como resolver el problema de: En mi pc anda
+# Que es Docker?
 
-# Docker
+### Primero, caso de uso
 
-Docker es una plataforma que automatiza el deploy, escalado y administracion de aplicaciones usando containers
+- Imagina que estas armando un proyecto con un equipo
+- Supongamos que este proyecto usa una version especifica de python
+- Cada miembro del equipo tiene que configurar todo a mano (dependencias, variables de entorno)
+- Esto trae una cantidad variada de problemas
+  - "A vos no te anda, en mi pc anda bien"
+  - Si tenemos varios proyectos tenemos que invertir mucho tiempo en configurarlos
 
-Key Concepts
-Containers: Containers are lightweight, portable, and self-sufficient environments that include everything needed to run a piece of software, including the code, runtime, system tools, libraries, and settings. Containers share the same operating system kernel, making them much more efficient than traditional virtual machines (VMs).
+### Para poder evitar esto
 
-Images: An image is a read-only template with instructions for creating a Docker container. Images are built from a series of layers, and each layer represents a step in the image-building process. Images can be pulled from public or private repositories.
+### Usamos Containers
 
-Dockerfile: A Dockerfile is a text file that contains a series of instructions on how to build a Docker image. It specifies the base image, application code, dependencies, and other necessary configurations.
+Una definicion basica y por arriba de que es un container es "un container es una carpeta o un paquete con todo lo que tu aplicacion necesita para funcionar"
 
-Docker Hub: Docker Hub is a cloud-based registry service that allows you to find and share container images with your team. It's the default registry used by Docker and hosts public and private images.
+Gracias a un container no nos tenemos que preocupar por la configuracion del proyecto, ya que todo lo que necesita esta dentro del container
 
-Key Components
-Docker Engine: The core of Docker, it is a client-server application that builds and runs Docker containers. It consists of:
+Lo unico que necesitariamos es algo para manipular y administrar estos containers, que es donde aparece
 
-Docker Daemon (dockerd): The background service running on the host that manages Docker images, containers, networks, and storage volumes.
-Docker Client (docker): The command-line interface (CLI) that allows users to interact with the Docker daemon.
+## Docker
+
+Docker es/tiene/puede:
+
+- Tiene una gran comunidad por lo que se cuenta con herramientas y librerias disponibles (dockerhub)
+  - Una herramienta para administrar containers
+  - Una de las herramientas fundamentales en el area de DevOps
+  - Facilita los procesos de CI/CD al proveer entornos para cada stage/etapa?
+  - los containers usan menos recursos que una maquina virtual (despues se amplia)
+  - Las aplicaciones corren igual sin importar en que maquina esten (OS agnostic)
+  - Usa menos espacio ya que usa un file system basado en layers (se amplia despues)
+  - ...
+
+# Como se instala Docker?
+
+aca va la guia de la documentacion oficial
+terminala con mostrar el docker run hello world para ver que anda bien
+
+# Ya muestra el maldito container
+
+Antes de llegar al container vamos con el dockerfile hace la imagen de la imagen sale el container
+Dockerfile ------> Imagen --------> Container
+
+El dockerfile es un archivo de texto (yaml) que tiene las instrucciones de como se va a hacer la imagen, es como armar un molde
+
+(mostra el comando docker build)
+
+la imagen seria el molde, de la imagen sale un container (puede salir mas de uno)
+
+(mostra docker run)
+
+# Anatomia de un Dockerfile
+
+TODO EXPLICAR ESTO
+
+FROM node:0.10
+MAINTAINER Anna Doe <anna@example.com>
+LABEL "rating"="Five Stars" "class"="First Class"
+USER root
+ENV AP /data/app
+ENV SCPATH /etc/supervisor/conf.d
+RUN apt-get -y update
+
+#### The daemons
+
+RUN apt-get -y install supervisor
+RUN mkdir -p /var/log/supervisor
+
+#### Supervisor Configuration
+
+ADD ./supervisord/conf.d/\* $SCPATH/
+
+#### Application Code
+
+ADD _.js_ $AP/
+WORKDIR $AP
+RUN npm install
+CMD ["supervisord", "-n"]
+
+TODO
+CONTAINERS VS VIRTUAL MACHINES
+
+- por que usa menos recursos (explicar cgroups)
+- como se aislan los procesos (explicar kernel namespaces)
