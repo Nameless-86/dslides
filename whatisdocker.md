@@ -33,9 +33,12 @@ Docker es/tiene/puede:
   - ...
 
 # Como se instala Docker?
+En la pagina oficial de docker esta como instalar docker engine en distintas distribuciones de linux
+https://docs.docker.com/engine/install/[DISTRO]/
 
-aca va la guia de la documentacion oficial
-terminala con mostrar el docker run hello world para ver que anda bien
+En el caso de windows se puede instalar directamente docker desktop (docker engine con una UI)
+
+una vez que terminamos de instalar, para verificar que ande todo bien corre este comando $ docker run hello-world
 
 # Ya muestra el maldito container
 
@@ -44,42 +47,76 @@ Dockerfile ------> Imagen --------> Container
 
 El dockerfile es un archivo de texto (yaml) que tiene las instrucciones de como se va a hacer la imagen, es como armar un molde
 
-(mostra el comando docker build)
+que le hago al dockerfile para que haga la imagen?
+corre este comando $ docker build -t nombre-de-la-imagen ./directorio-del-dockerfile
 
 la imagen seria el molde, de la imagen sale un container (puede salir mas de uno)
 
-(mostra docker run)
+$ docker run nombre-imagen
+
 
 # Anatomia de un Dockerfile
+basicamente un dockerfile describe los pasos necesarios para crear una imagen, por lo general va en el directorio root de la app.
 
-TODO EXPLICAR ESTO
+cada linea del dockerfile crea una nueva layer de una imagen que docker la va a guardar, basicamente cuando hagas imagenes nuevas docker solo necesita crear layers de imagenes que varien de la anterior
 
-FROM node:0.10
-MAINTAINER Anna Doe <anna@example.com>
-LABEL "rating"="Five Stars" "class"="First Class"
-USER root
+
+FROM node:0.10 ---> imagen base
+
+MAINTAINER Anna Doe <anna@example.com> --> metadata
+LABEL "rating"="Five Stars" "class"="First Class" --> metadata
+USER root (por mas que los containers provean aislamiento del os siguen corriendo en el kernel del host, en los containers de produccion siempre se debe correr como un usuario no privilegiado)
+
+-- Setear variables de entorno para simplificar el proceso de crear la imagen, manteniendo el dockefile mas simple y siguiendo el principio DRY(dont repeat yourself)
+
 ENV AP /data/app
 ENV SCPATH /etc/supervisor/conf.d
-RUN apt-get -y update
 
-#### The daemons
+
+
+RUN apt-get -y update --> esto va a hacer que el build sea mas lento, si podes conseguir una imagen que este actualizada
+
+#### The daemons (esto instala algunas dependencias que necesito usar, tambien forma la estructura archivos que necesito)
 
 RUN apt-get -y install supervisor
 RUN mkdir -p /var/log/supervisor
 
 #### Supervisor Configuration
-
+-- Add sirve para copiar archivos del filesystem local a tu imagen (una vez que haga la imagen puedo usarla sin tener accesso al file system original, ya que los archivos fueron copiados)
 ADD ./supervisord/conf.d/\* $SCPATH/
 
 #### Application Code
 
+El orden de los comandos va a afectar el tiempo de ejecucion, lo optimo es poner los que cambian entre cada imagen al fondo
+
 ADD _.js_ $AP/
 WORKDIR $AP
 RUN npm install
+
+CMD corre el comando que inicia el proceso que quiero correr dentro del container
+
 CMD ["supervisord", "-n"]
 
-TODO
+Lo que se considera como best practice es correr un solo proceso en un container
+
+#############################################################3
 CONTAINERS VS VIRTUAL MACHINES
+
+Si muy lindo el container, pero puedo hacer una maquina virtual y es lo mismo
+
+Por que los containers y las maquinas virtuales no son lo mismo?
+Porque si fueran lo mismo se llamarian igual, chau.
+
+Bueno, un viaje por distintas epocas de desarrollo de software
+![K8s Virtualization](https://kubernetes.io/images/docs/Container_Evolution.svg)
+
+En la etapa tradicional se usaban servidores fisicos, no podemos definir recursos para distintas partes del servidor, en el caso de correr 2 aplicaciones en el mismo servidor, si una toma muchos recursos hacia caer la otra, la solucion es usar varios servidores, pero el problema de esto es el alto precio de escalar servidores fisicos y que hago con los recursos no utilizados. 
+
+Deploys virtualizados: Otra solucion fue correr maquinas virtuales en un servidor, la virtualizacion permite aislar y asegurar los procesos ya que cada una corre su propio sistema operativo, por lo que el resto no pueden acceder.
+Virtualizando optimizamos el uso de recursos en el servidor fisico, esto escala mejor ya que puedo usar un grupo de servidores fisicos con maquinas virtuales desechables
+
+Containers: a diferencia de las maquinas virtuales comparten sistema operativo entre las aplicaciones, tienen su propio filesystem, cpu y memoria. Lo que los hace muy utiles es el ser portables a lo largo de sistemas operativos y distintos cloud providers
 
 - por que usa menos recursos (explicar cgroups)
 - como se aislan los procesos (explicar kernel namespaces)
+
