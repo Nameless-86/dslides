@@ -99,8 +99,7 @@ CMD ["supervisord", "-n"]
 
 Lo que se considera como best practice es correr un solo proceso en un container
 
-#############################################################3
-CONTAINERS VS VIRTUAL MACHINES
+## CONTAINERS VS VIRTUAL MACHINES
 
 Si muy lindo el container, pero puedo hacer una maquina virtual y es lo mismo
 
@@ -117,6 +116,33 @@ Virtualizando optimizamos el uso de recursos en el servidor fisico, esto escala 
 
 Containers: a diferencia de las maquinas virtuales comparten sistema operativo entre las aplicaciones, tienen su propio filesystem, cpu y memoria. Lo que los hace muy utiles es el ser portables a lo largo de sistemas operativos y distintos cloud providers
 
-- por que usa menos recursos (explicar cgroups)
-- como se aislan los procesos (explicar kernel namespaces)
+## Como se aislan los procesos en containers?
 
+    Namespaces: Docker creates separate namespaces for the container, isolating its process IDs, network interfaces, mounts, IPC resources, hostname, and user/group IDs. This gives the container its own isolated environment.
+
+
+
+Kernel Namespaces, esto es una feature de linux
+Docker usa:
+ - PID (process ID): cada container tiene su propio set de process ids, dentro del container los procesos tienen distinto PID que en el host, esto previene al container de interactuar con procesos fuera de el
+ - Network: Aisla las interfaces de red, ips, routing tables. Cada container tiene su propio network stack, por lo que tiene su propia ip y configuracion de red, distinta del host.
+
+ - Mount: Esto es una forma de montar y desmontar filesystems sin afectar al host
+
+ - UTS: para aislar el hostname y domain name, util para las configuraciones de red
+
+ - User: Esto permite el mapeo de usuarios y group IDS dentro del container, esto provee seguridad al no darles acceso directo a los privilegios de root del host (mucho muy importante)
+
+En docker: se crean namespaces separados para el container, lo que crea su propio entorno aislado
+
+## Que se encarga de los recursos que usa cada container?
+
+Control groupc (cgroups), tambien son una feature del kernel de linux, lo que aisla los recursos dentro de cada container (cpu, memoria y operaciones sobre el disco)
+En el caso de docker, pone los procesos del container en cgroups, que controlan y limitan los procesos del container, esto asegura la buena performance.
+
+
+
+# En caso de que quieras ver con mas profundidad estos ultimos temas
+https://medium.com/@saschagrunert/demystifying-containers-part-i-kernel-space-2c53d6979504
+https://medium.com/@saschagrunert demystifying-containers-part-ii-container-runtimes-e363aa378f25
+https://medium.com/@saschagrunert/demystifying-containers-part-iii-container-images-244865de6fef
